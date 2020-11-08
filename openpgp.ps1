@@ -1,41 +1,36 @@
 Set-StrictMode -Version Latest
 #RFC4880
 
+. .\Oid.ps1
+
 $ASN1_CURVE_IDENTIFIERS = @{
     '1.2.840.10045.3.1.7' = [PSCustomObject]@{
         'ObjectID' = '1.2.840.10045.3.1.7'
         'Name' = 'NIST P-256'
-        'Data' = @(0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x03, 0x01, 0x07)
     }
     '1.3.132.0.34' = [PSCustomObject]@{
         'ObjectID' = '1.3.132.0.34'
         'Name' = 'NIST P-384'
-        'Data' = @(0x2B, 0x81, 0x04, 0x00, 0x22)
     }
     '1.3.132.0.35' = [PSCustomObject]@{
         'ObjectID' = '1.3.132.0.35'
         'Name' = 'NIST P-521'
-        'Data' = @(0x2B, 0x81, 0x04, 0x00, 0x23);
     }
     '1.3.36.3.3.2.8.1.1.7' = [PSCustomObject]@{
         'ObjectID' = '1.3.36.3.3.2.8.1.1.7'
         'Name' = 'brainpoolP256r1'
-        'Data' = @(0x2B, 0x24, 0x03, 0x03, 0x02, 0x08, 0x01, 0x01, 0x07)
     }
     '1.3.36.3.3.2.8.1.1.13' = [PSCustomObject]@{
         'ObjectID' = '1.3.36.3.3.2.8.1.1.13'
         'Name' = 'brainpoolP512r1'
-        'Data' = @(0x2B, 0x24, 0x03, 0x03, 0x02, 0x08, 0x01, 0x01, 0x0D)
     }
     '1.3.6.1.4.1.11591.15.1' = [PSCustomObject]@{
         'ObjectID' = '1.3.6.1.4.1.11591.15.1'
         'Name' = 'Ed25519'
-        'Data' = @(0x2B, 0x06, 0x01, 0x04, 0x01, 0xDA, 0x47, 0x0F, 0x01)
     }
     '1.3.6.1.4.1.3029.1.5.1' = [PSCustomObject]@{
         'ObjectID' = '1.3.6.1.4.1.3029.1.5.1'
         'Name' = 'Curve25519'
-        'Data' = @(0x2B, 0x06, 0x01, 0x04, 0x01, 0x97, 0x55, 0x01, 0x05, 0x01)
     }
 }
 
@@ -335,14 +330,13 @@ function Get-CurveInfo([byte[]]$data, $offset = 0, $length = -1) {
     if($length -eq -1) {
         $length = $data.Length - $offset
     }
-    return $ASN1_CURVE_IDENTIFIERS.Values | Where-Object {$_.Data.Length -eq $length} | ForEach-Object {
-        for($i = 0; $i -lt $length; $i++) {
-            if($data[$offset + $i] -ne $_.Data[$i]) {
-                return
-            }
-        }
-        return $_
+    $oid = ConvertTo-Oid ($data[$offset..$($offset + $length - 1)])
+    if($ASN1_CURVE_IDENTIFIERS.ContainsKey($oid)) {
+        $result = $ASN1_CURVE_IDENTIFIERS.$oid
+    } else {
+        $result = "Undefined ObjectID: $oid"
     }
+    return $result
 }
 function Get-DataFromHashTable($name, $table, $key) {
     if($table.ContainsKey($key)) {
