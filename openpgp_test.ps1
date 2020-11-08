@@ -207,6 +207,9 @@ function Test-DetachedSignature($file, $key) {
     $main = $file -replace "$($f.Extension)$"
     "Verify $file for $main" | Write-Verbose
     $detsign = Get-OpenPGPPacket $file
+    if(!(Test-Path $main)) {
+        throw 'data not found'
+    }
     $sign = $detsign.Packet[0]
     $key = $null
     $keyID = $sign.HashedSubpacket | Where-Object {$_.Type -eq 33}
