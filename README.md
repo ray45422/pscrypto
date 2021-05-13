@@ -1,2 +1,2 @@
-# pspgp
-Studing OpenPGP on PowerShell
+# pscrypto
+Studing Cryptography on PowerShell
