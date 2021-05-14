@@ -226,7 +226,7 @@ function Get-PrivateKey($file) {
     $b = $b[4..($b.Length - 1)]
 
     $r = Get-Values $b $keyN
-    $pubKeys = $r.Data | ForEach-Object {
+    [object[]]$pubKeys = $r.Data | ForEach-Object {
         Get-PublicKeyImpl $_
     }
 
